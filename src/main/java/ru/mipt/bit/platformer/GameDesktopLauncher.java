@@ -6,60 +6,60 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.MapRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
+import ru.mipt.bit.platformer.graphics.LevelGraphics;
+import ru.mipt.bit.platformer.graphics.TankGraphics;
+import ru.mipt.bit.platformer.graphics.TreeGraphics;
+import ru.mipt.bit.platformer.input.InputController;
+import ru.mipt.bit.platformer.input.MoveAction;
+import ru.mipt.bit.platformer.model.Direction;
+import ru.mipt.bit.platformer.model.GameField;
+import ru.mipt.bit.platformer.model.Tank;
+import ru.mipt.bit.platformer.model.Tree;
 import ru.mipt.bit.platformer.util.TileMovement;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
-import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
 public class GameDesktopLauncher implements ApplicationListener {
 
-    private static final Map<Integer, Direction> KEYS = new LinkedHashMap<>();
-
-    static {
-        KEYS.put(UP, Direction.UP);
-        KEYS.put(W, Direction.UP);
-        KEYS.put(LEFT, Direction.LEFT);
-        KEYS.put(A, Direction.LEFT);
-        KEYS.put(DOWN, Direction.DOWN);
-        KEYS.put(S, Direction.DOWN);
-        KEYS.put(RIGHT, Direction.RIGHT);
-        KEYS.put(D, Direction.RIGHT);
-    }
-
     private Batch batch;
 
-    private TiledMap level;
-    private MapRenderer levelRenderer;
-    private TileMovement tileMovement;
-
     private Tank tank;
-    private Tree tree;
-    private GameField field;
+    private InputController inputController;
+
+    private LevelGraphics levelGraphics;
+    private TankGraphics tankGraphics;
+    private TreeGraphics treeGraphics;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
-
-        // load level tiles
-        level = new TmxMapLoader().load("level.tmx");
-        levelRenderer = createSingleLayerMapRenderer(level, batch);
-        TiledMapTileLayer groundLayer = getSingleLayer(level);
-        tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
+        levelGraphics = new LevelGraphics(batch);
+        TileMovement tileMovement = new TileMovement(levelGraphics.getGroundLayer(), Interpolation.smooth);
 
         tank = new Tank(new GridPoint2(1, 1));
-        tree = new Tree(new GridPoint2(1, 3), groundLayer);
-        field = new GameField(Collections.singletonList(tree));
+        Tree tree = new Tree(new GridPoint2(1, 3));
+        GameField field = new GameField(Collections.singletonList(tree));
+
+        tankGraphics = new TankGraphics(tank, tileMovement);
+        treeGraphics = new TreeGraphics(tree, levelGraphics.getGroundLayer());
+
+        inputController = new InputController(Gdx.input::isKeyPressed);
+        addMoveAction(field, Direction.UP, UP, W);
+        addMoveAction(field, Direction.LEFT, LEFT, A);
+        addMoveAction(field, Direction.DOWN, DOWN, S);
+        addMoveAction(field, Direction.RIGHT, RIGHT, D);
+    }
+
+    private void addMoveAction(GameField field, Direction direction, int... keys) {
+        MoveAction action = new MoveAction(tank, direction, field);
+        for (int key : keys) {
+            inputController.addAction(key, action);
+        }
     }
 
     @Override
@@ -71,22 +71,18 @@ public class GameDesktopLauncher implements ApplicationListener {
         // get time passed since the last render
         float deltaTime = Gdx.graphics.getDeltaTime();
 
-        for (Map.Entry<Integer, Direction> entry : KEYS.entrySet()) {
-            if (Gdx.input.isKeyPressed(entry.getKey())) {
-                tank.move(entry.getValue(), field);
-            }
-        }
-
-        tank.update(tileMovement, deltaTime);
+        inputController.handleInput();
+        tankGraphics.updatePosition();
+        tank.update(deltaTime);
 
         // render each tile of the level
-        levelRenderer.render();
+        levelGraphics.render();
 
         // start recording all drawing commands
         batch.begin();
 
-        tank.render(batch);
-        tree.render(batch);
+        tankGraphics.render(batch);
+        treeGraphics.render(batch);
 
         // submit all drawing requests
         batch.end();
@@ -110,9 +106,9 @@ public class GameDesktopLauncher implements ApplicationListener {
     @Override
     public void dispose() {
         // dispose of all the native resources (classes which implement com.badlogic.gdx.utils.Disposable)
-        tree.dispose();
-        tank.dispose();
-        level.dispose();
+        treeGraphics.dispose();
+        tankGraphics.dispose();
+        levelGraphics.dispose();
         batch.dispose();
     }
 
