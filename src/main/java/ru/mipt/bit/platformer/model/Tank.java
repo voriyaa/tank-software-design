@@ -1,31 +1,20 @@
-package ru.mipt.bit.platformer;
+package ru.mipt.bit.platformer.model;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Rectangle;
-import ru.mipt.bit.platformer.util.TileMovement;
 
 import static com.badlogic.gdx.math.MathUtils.isEqual;
-import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
 public class Tank {
 
     private static final float MOVEMENT_SPEED = 0.4f;
 
-    private final Texture texture;
-    private final TextureRegion graphics;
-    private final Rectangle rectangle;
     private final GridPoint2 coordinates;
     private final GridPoint2 destinationCoordinates;
     private float movementProgress = 1f;
     private float rotation = 0f;
 
     public Tank(GridPoint2 coordinates) {
-        texture = new Texture("images/tank_blue.png");
-        graphics = new TextureRegion(texture);
-        rectangle = createBoundingRectangle(graphics);
         this.coordinates = new GridPoint2(coordinates);
         destinationCoordinates = new GridPoint2(coordinates);
     }
@@ -42,19 +31,26 @@ public class Tank {
         rotation = direction.getRotation();
     }
 
-    public void update(TileMovement tileMovement, float deltaTime) {
-        tileMovement.moveRectangleBetweenTileCenters(rectangle, coordinates, destinationCoordinates, movementProgress);
+    public void update(float deltaTime) {
         movementProgress = continueProgress(movementProgress, deltaTime, MOVEMENT_SPEED);
         if (isEqual(movementProgress, 1f)) {
             coordinates.set(destinationCoordinates);
         }
     }
 
-    public void render(Batch batch) {
-        drawTextureRegionUnscaled(batch, graphics, rectangle, rotation);
+    public GridPoint2 getCoordinates() {
+        return coordinates;
     }
 
-    public void dispose() {
-        texture.dispose();
+    public GridPoint2 getDestinationCoordinates() {
+        return destinationCoordinates;
+    }
+
+    public float getMovementProgress() {
+        return movementProgress;
+    }
+
+    public float getRotation() {
+        return rotation;
     }
 }
