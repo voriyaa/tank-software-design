@@ -6,9 +6,9 @@ import java.util.List;
 
 public class GameField implements CollisionDetector {
 
-    private final List<Obstacle> obstacles;
+    private final List<? extends Obstacle> obstacles;
 
-    public GameField(List<Obstacle> obstacles) {
+    public GameField(List<? extends Obstacle> obstacles) {
         this.obstacles = obstacles;
     }
 
