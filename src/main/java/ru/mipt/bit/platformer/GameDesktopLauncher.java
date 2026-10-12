@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
 import ru.mipt.bit.platformer.graphics.LevelGraphics;
+import ru.mipt.bit.platformer.graphics.Renderable;
 import ru.mipt.bit.platformer.graphics.TankGraphics;
 import ru.mipt.bit.platformer.graphics.TreeGraphics;
 import ru.mipt.bit.platformer.input.InputController;
@@ -19,12 +20,16 @@ import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
 import ru.mipt.bit.platformer.util.TileMovement;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
 public class GameDesktopLauncher implements ApplicationListener {
+
+    private static final float TANK_MOVEMENT_SPEED = 0.4f;
 
     private Batch batch;
 
@@ -33,30 +38,31 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private LevelGraphics levelGraphics;
     private TankGraphics tankGraphics;
-    private TreeGraphics treeGraphics;
+    private List<Renderable> renderables;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
-        levelGraphics = new LevelGraphics(batch);
+        levelGraphics = new LevelGraphics("level.tmx", batch);
         TileMovement tileMovement = new TileMovement(levelGraphics.getGroundLayer(), Interpolation.smooth);
 
-        tank = new Tank(new GridPoint2(1, 1));
         Tree tree = new Tree(new GridPoint2(1, 3));
         GameField field = new GameField(Collections.singletonList(tree));
+        tank = new Tank(new GridPoint2(1, 1), TANK_MOVEMENT_SPEED, field);
 
-        tankGraphics = new TankGraphics(tank, tileMovement);
-        treeGraphics = new TreeGraphics(tree, levelGraphics.getGroundLayer());
+        tankGraphics = new TankGraphics(tank, tileMovement, "images/tank_blue.png");
+        TreeGraphics treeGraphics = new TreeGraphics(tree, levelGraphics.getGroundLayer(), "images/greenTree.png");
+        renderables = Arrays.asList(tankGraphics, treeGraphics);
 
         inputController = new InputController(Gdx.input::isKeyPressed);
-        addMoveAction(field, Direction.UP, UP, W);
-        addMoveAction(field, Direction.LEFT, LEFT, A);
-        addMoveAction(field, Direction.DOWN, DOWN, S);
-        addMoveAction(field, Direction.RIGHT, RIGHT, D);
+        addMoveAction(Direction.UP, UP, W);
+        addMoveAction(Direction.LEFT, LEFT, A);
+        addMoveAction(Direction.DOWN, DOWN, S);
+        addMoveAction(Direction.RIGHT, RIGHT, D);
     }
 
-    private void addMoveAction(GameField field, Direction direction, int... keys) {
-        MoveAction action = new MoveAction(tank, direction, field);
+    private void addMoveAction(Direction direction, int... keys) {
+        MoveAction action = new MoveAction(tank, direction);
         for (int key : keys) {
             inputController.addAction(key, action);
         }
@@ -81,8 +87,9 @@ public class GameDesktopLauncher implements ApplicationListener {
         // start recording all drawing commands
         batch.begin();
 
-        tankGraphics.render(batch);
-        treeGraphics.render(batch);
+        for (Renderable renderable : renderables) {
+            renderable.render(batch);
+        }
 
         // submit all drawing requests
         batch.end();
@@ -106,8 +113,9 @@ public class GameDesktopLauncher implements ApplicationListener {
     @Override
     public void dispose() {
         // dispose of all the native resources (classes which implement com.badlogic.gdx.utils.Disposable)
-        treeGraphics.dispose();
-        tankGraphics.dispose();
+        for (Renderable renderable : renderables) {
+            renderable.dispose();
+        }
         levelGraphics.dispose();
         batch.dispose();
     }

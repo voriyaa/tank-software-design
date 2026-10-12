@@ -5,26 +5,29 @@ import com.badlogic.gdx.math.GridPoint2;
 import static com.badlogic.gdx.math.MathUtils.isEqual;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
-public class Tank {
+public class Tank implements Movable {
 
-    private static final float MOVEMENT_SPEED = 0.4f;
-
+    private final float movementSpeed;
+    private final CollisionDetector collisionDetector;
     private final GridPoint2 coordinates;
     private final GridPoint2 destinationCoordinates;
     private float movementProgress = 1f;
     private float rotation = 0f;
 
-    public Tank(GridPoint2 coordinates) {
+    public Tank(GridPoint2 coordinates, float movementSpeed, CollisionDetector collisionDetector) {
+        this.movementSpeed = movementSpeed;
+        this.collisionDetector = collisionDetector;
         this.coordinates = new GridPoint2(coordinates);
         destinationCoordinates = new GridPoint2(coordinates);
     }
 
-    public void move(Direction direction, GameField field) {
+    @Override
+    public void move(Direction direction) {
         if (!isEqual(movementProgress, 1f)) {
             return;
         }
         GridPoint2 target = direction.apply(coordinates);
-        if (field.isFree(target)) {
+        if (collisionDetector.isFree(target)) {
             destinationCoordinates.set(target);
             movementProgress = 0f;
         }
@@ -32,7 +35,7 @@ public class Tank {
     }
 
     public void update(float deltaTime) {
-        movementProgress = continueProgress(movementProgress, deltaTime, MOVEMENT_SPEED);
+        movementProgress = continueProgress(movementProgress, deltaTime, movementSpeed);
         if (isEqual(movementProgress, 1f)) {
             coordinates.set(destinationCoordinates);
         }

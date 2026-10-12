@@ -27,6 +27,14 @@ class GameFieldTest {
     }
 
     @Test
+    void anyObstacleBlocksCell() {
+        Obstacle wall = () -> new GridPoint2(2, 2);
+        GameField field = new GameField(Collections.singletonList(wall));
+
+        assertFalse(field.isFree(new GridPoint2(2, 2)));
+    }
+
+    @Test
     void emptyFieldIsFree() {
         GameField field = new GameField(Collections.emptyList());
 
