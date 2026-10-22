@@ -13,15 +13,18 @@ public class RandomLevelGenerator implements LevelGenerator {
     private final int width;
     private final int height;
     private final int treeCount;
+    private final int aiTankCount;
     private final Random random;
 
-    public RandomLevelGenerator(int width, int height, int treeCount, Random random) {
-        if (treeCount < 0 || treeCount >= width * height) {
-            throw new IllegalArgumentException("Too many trees for " + width + "x" + height + " level: " + treeCount);
+    public RandomLevelGenerator(int width, int height, int treeCount, int aiTankCount, Random random) {
+        if (treeCount < 0 || aiTankCount < 0 || treeCount + aiTankCount >= width * height) {
+            throw new IllegalArgumentException("Can't place " + treeCount + " trees and " + aiTankCount
+                    + " tanks on " + width + "x" + height + " level");
         }
         this.width = width;
         this.height = height;
         this.treeCount = treeCount;
+        this.aiTankCount = aiTankCount;
         this.random = random;
     }
 
@@ -39,6 +42,7 @@ public class RandomLevelGenerator implements LevelGenerator {
         for (GridPoint2 cell : cells.subList(1, treeCount + 1)) {
             trees.add(new Tree(cell));
         }
-        return new Level(cells.get(0), trees);
+        List<GridPoint2> aiTankPositions = new ArrayList<>(cells.subList(treeCount + 1, treeCount + aiTankCount + 1));
+        return new Level(cells.get(0), trees, aiTankPositions);
     }
 }

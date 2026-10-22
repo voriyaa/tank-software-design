@@ -9,10 +9,12 @@ public class Level {
 
     private final GridPoint2 playerPosition;
     private final List<Tree> trees;
+    private final List<GridPoint2> aiTankPositions;
 
-    public Level(GridPoint2 playerPosition, List<Tree> trees) {
+    public Level(GridPoint2 playerPosition, List<Tree> trees, List<GridPoint2> aiTankPositions) {
         this.playerPosition = playerPosition;
         this.trees = trees;
+        this.aiTankPositions = aiTankPositions;
     }
 
     public GridPoint2 getPlayerPosition() {
@@ -21,5 +23,9 @@ public class Level {
 
     public List<Tree> getTrees() {
         return trees;
+    }
+
+    public List<GridPoint2> getAiTankPositions() {
+        return aiTankPositions;
     }
 }

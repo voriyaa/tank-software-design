@@ -41,6 +41,7 @@ class FileLevelGeneratorTest {
         assertTrue(treePositions(level).contains(new GridPoint2(3, 5)));
         assertTrue(treePositions(level).contains(new GridPoint2(0, 2)));
         assertTrue(treePositions(level).contains(new GridPoint2(9, 3)));
+        assertTrue(level.getAiTankPositions().isEmpty());
     }
 
     @Test

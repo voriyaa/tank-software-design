@@ -4,9 +4,9 @@ import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TankTest {
 
@@ -17,7 +17,8 @@ class TankTest {
 
     @BeforeEach
     void setUp() {
-        field = new GameField(Collections.singletonList(new Tree(new GridPoint2(1, 3))));
+        field = new GameField(10, 8);
+        field.addObstacle(new Tree(new GridPoint2(1, 3)));
         tank = new Tank(new GridPoint2(1, 1), 0.4f, field);
     }
 
@@ -97,5 +98,49 @@ class TankTest {
         assertEquals(1f, tank.getMovementProgress());
         assertEquals(new GridPoint2(0, 1), tank.getCoordinates());
         assertEquals(-180f, tank.getRotation());
+    }
+
+    @Test
+    void stopsAtLevelBorder() {
+        Tank cornerTank = new Tank(new GridPoint2(0, 0), 0.4f, field);
+
+        cornerTank.move(Direction.LEFT);
+        cornerTank.move(Direction.DOWN);
+
+        assertEquals(new GridPoint2(0, 0), cornerTank.getDestinationCoordinates());
+        assertEquals(1f, cornerTank.getMovementProgress());
+        assertEquals(-90f, cornerTank.getRotation());
+    }
+
+    @Test
+    void occupiesBothCellsWhileMoving() {
+        tank.move(Direction.RIGHT);
+
+        assertTrue(tank.occupies(new GridPoint2(1, 1)));
+        assertTrue(tank.occupies(new GridPoint2(2, 1)));
+        assertFalse(tank.occupies(new GridPoint2(3, 1)));
+    }
+
+    @Test
+    void occupiesOnlyNewCellAfterMovement() {
+        tank.move(Direction.RIGHT);
+        tank.update(0.4f);
+
+        assertFalse(tank.occupies(new GridPoint2(1, 1)));
+        assertTrue(tank.occupies(new GridPoint2(2, 1)));
+    }
+
+    @Test
+    void cannotMoveToCellsOfMovingTank() {
+        field.addObstacle(tank);
+        Tank left = new Tank(new GridPoint2(0, 1), 0.4f, field);
+        Tank right = new Tank(new GridPoint2(3, 1), 0.4f, field);
+
+        tank.move(Direction.RIGHT);
+        left.move(Direction.RIGHT);
+        right.move(Direction.LEFT);
+
+        assertEquals(new GridPoint2(0, 1), left.getDestinationCoordinates());
+        assertEquals(new GridPoint2(3, 1), right.getDestinationCoordinates());
     }
 }

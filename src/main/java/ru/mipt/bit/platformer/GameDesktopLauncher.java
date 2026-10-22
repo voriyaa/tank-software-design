@@ -7,13 +7,17 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
+import ru.mipt.bit.platformer.control.Command;
+import ru.mipt.bit.platformer.control.ControlStrategy;
+import ru.mipt.bit.platformer.control.KeyboardStrategy;
+import ru.mipt.bit.platformer.control.MoveCommand;
+import ru.mipt.bit.platformer.control.RandomStrategy;
 import ru.mipt.bit.platformer.graphics.LevelGraphics;
 import ru.mipt.bit.platformer.graphics.Renderable;
 import ru.mipt.bit.platformer.graphics.TankGraphics;
 import ru.mipt.bit.platformer.graphics.TreeGraphics;
-import ru.mipt.bit.platformer.input.InputController;
-import ru.mipt.bit.platformer.input.MoveAction;
 import ru.mipt.bit.platformer.level.FileLevelGenerator;
 import ru.mipt.bit.platformer.level.Level;
 import ru.mipt.bit.platformer.level.LevelGenerator;
@@ -35,58 +39,72 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private static final float TANK_MOVEMENT_SPEED = 0.4f;
     private static final int RANDOM_TREE_COUNT = 10;
+    private static final int AI_TANK_COUNT = 3;
 
-    private final boolean randomLevel;
+    private final boolean fileLevel;
+    private final Random random = new Random();
 
     private Batch batch;
-
-    private Tank tank;
-    private InputController inputController;
-
     private LevelGraphics levelGraphics;
-    private TankGraphics tankGraphics;
-    private List<Renderable> renderables;
+    private TileMovement tileMovement;
+    private GameField field;
 
-    public GameDesktopLauncher(boolean randomLevel) {
-        this.randomLevel = randomLevel;
+    private final List<Tank> tanks = new ArrayList<>();
+    private final List<ControlStrategy> strategies = new ArrayList<>();
+    private final List<Renderable> renderables = new ArrayList<>();
+
+    public GameDesktopLauncher(boolean fileLevel) {
+        this.fileLevel = fileLevel;
     }
 
     @Override
     public void create() {
         batch = new SpriteBatch();
         levelGraphics = new LevelGraphics("level.tmx", batch);
-        TileMovement tileMovement = new TileMovement(levelGraphics.getGroundLayer(), Interpolation.smooth);
+        TiledMapTileLayer groundLayer = levelGraphics.getGroundLayer();
+        tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
+        field = new GameField(groundLayer.getWidth(), groundLayer.getHeight());
 
         Level level = createLevelGenerator().generate();
-        GameField field = new GameField(level.getTrees());
-        tank = new Tank(level.getPlayerPosition(), TANK_MOVEMENT_SPEED, field);
-
-        tankGraphics = new TankGraphics(tank, tileMovement, "images/tank_blue.png");
-        renderables = new ArrayList<>();
-        renderables.add(tankGraphics);
         for (Tree tree : level.getTrees()) {
-            renderables.add(new TreeGraphics(tree, levelGraphics.getGroundLayer(), "images/greenTree.png"));
+            field.addObstacle(tree);
+            renderables.add(new TreeGraphics(tree, groundLayer, "images/greenTree.png"));
         }
 
-        inputController = new InputController(Gdx.input::isKeyPressed);
-        addMoveAction(Direction.UP, UP, W);
-        addMoveAction(Direction.LEFT, LEFT, A);
-        addMoveAction(Direction.DOWN, DOWN, S);
-        addMoveAction(Direction.RIGHT, RIGHT, D);
+        Tank player = addTank(level.getPlayerPosition());
+        KeyboardStrategy keyboard = new KeyboardStrategy(Gdx.input::isKeyPressed);
+        addMoveCommand(keyboard, player, Direction.UP, UP, W);
+        addMoveCommand(keyboard, player, Direction.LEFT, LEFT, A);
+        addMoveCommand(keyboard, player, Direction.DOWN, DOWN, S);
+        addMoveCommand(keyboard, player, Direction.RIGHT, RIGHT, D);
+        strategies.add(keyboard);
+
+        for (GridPoint2 position : level.getAiTankPositions()) {
+            strategies.add(new RandomStrategy(addTank(position), random));
+        }
     }
 
     private LevelGenerator createLevelGenerator() {
-        if (randomLevel) {
-            TiledMapTileLayer groundLayer = levelGraphics.getGroundLayer();
-            return new RandomLevelGenerator(groundLayer.getWidth(), groundLayer.getHeight(), RANDOM_TREE_COUNT, new Random());
+        if (fileLevel) {
+            return new FileLevelGenerator(Gdx.files.internal("level.txt").reader());
         }
-        return new FileLevelGenerator(Gdx.files.internal("level.txt").reader());
+        TiledMapTileLayer groundLayer = levelGraphics.getGroundLayer();
+        return new RandomLevelGenerator(groundLayer.getWidth(), groundLayer.getHeight(),
+                RANDOM_TREE_COUNT, AI_TANK_COUNT, random);
     }
 
-    private void addMoveAction(Direction direction, int... keys) {
-        MoveAction action = new MoveAction(tank, direction);
+    private Tank addTank(GridPoint2 position) {
+        Tank tank = new Tank(position, TANK_MOVEMENT_SPEED, field);
+        field.addObstacle(tank);
+        tanks.add(tank);
+        renderables.add(new TankGraphics(tank, tileMovement, "images/tank_blue.png"));
+        return tank;
+    }
+
+    private void addMoveCommand(KeyboardStrategy keyboard, Tank tank, Direction direction, int... keys) {
+        MoveCommand command = new MoveCommand(tank, direction);
         for (int key : keys) {
-            inputController.addAction(key, action);
+            keyboard.addCommand(key, command);
         }
     }
 
@@ -99,9 +117,14 @@ public class GameDesktopLauncher implements ApplicationListener {
         // get time passed since the last render
         float deltaTime = Gdx.graphics.getDeltaTime();
 
-        inputController.handleInput();
-        tankGraphics.updatePosition();
-        tank.update(deltaTime);
+        for (ControlStrategy strategy : strategies) {
+            for (Command command : strategy.getCommands()) {
+                command.execute();
+            }
+        }
+        for (Tank tank : tanks) {
+            tank.update(deltaTime);
+        }
 
         // render each tile of the level
         levelGraphics.render();
@@ -146,7 +169,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         // level width: 10 tiles x 128px, height: 8 tiles x 128px
         config.setWindowedMode(1280, 1024);
-        boolean randomLevel = args.length > 0 && args[0].equals("random");
-        new Lwjgl3Application(new GameDesktopLauncher(randomLevel), config);
+        boolean fileLevel = args.length > 0 && args[0].equals("file");
+        new Lwjgl3Application(new GameDesktopLauncher(fileLevel), config);
     }
 }
