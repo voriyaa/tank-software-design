@@ -5,33 +5,64 @@ import com.badlogic.gdx.math.GridPoint2;
 import static com.badlogic.gdx.math.MathUtils.isEqual;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
-public class Tank implements Movable, Obstacle {
+public class Tank implements GameObject, Movable, Shooter {
+
+    private static final float RELOAD_TIME = 1f;
+    private static final float BULLET_SPEED = 0.1f;
+    private static final int BULLET_DAMAGE = 1;
 
     private final float movementSpeed;
-    private final CollisionDetector collisionDetector;
+    private final GameField field;
     private final GridPoint2 coordinates;
     private final GridPoint2 destinationCoordinates;
     private float movementProgress = 1f;
-    private float rotation = 0f;
+    private Direction direction = Direction.RIGHT;
+    private int health;
+    private float timeSinceShot = RELOAD_TIME;
 
-    public Tank(GridPoint2 coordinates, float movementSpeed, CollisionDetector collisionDetector) {
+    public Tank(GridPoint2 coordinates, float movementSpeed, int health, GameField field) {
         this.movementSpeed = movementSpeed;
-        this.collisionDetector = collisionDetector;
+        this.health = health;
+        this.field = field;
         this.coordinates = new GridPoint2(coordinates);
         destinationCoordinates = new GridPoint2(coordinates);
     }
 
     @Override
     public void move(Direction direction) {
-        if (!isEqual(movementProgress, 1f)) {
+        if (!isAlive() || !isEqual(movementProgress, 1f)) {
             return;
         }
         GridPoint2 target = direction.apply(coordinates);
-        if (collisionDetector.isFree(target)) {
+        if (field.isFree(target)) {
             destinationCoordinates.set(target);
             movementProgress = 0f;
         }
-        rotation = direction.getRotation();
+        this.direction = direction;
+    }
+
+    @Override
+    public void shoot() {
+        if (!isAlive() || timeSinceShot < RELOAD_TIME) {
+            return;
+        }
+        timeSinceShot = 0f;
+
+        GridPoint2 start = direction.apply(destinationCoordinates);
+        if (field.isFree(start)) {
+            field.add(new Bullet(start, direction, BULLET_SPEED, BULLET_DAMAGE, field));
+        } else {
+            field.hit(start, BULLET_DAMAGE);
+        }
+    }
+
+    @Override
+    public void live(float deltaTime) {
+        movementProgress = continueProgress(movementProgress, deltaTime, movementSpeed);
+        if (isEqual(movementProgress, 1f)) {
+            coordinates.set(destinationCoordinates);
+        }
+        timeSinceShot += deltaTime;
     }
 
     @Override
@@ -39,11 +70,20 @@ public class Tank implements Movable, Obstacle {
         return coordinates.equals(point) || destinationCoordinates.equals(point);
     }
 
-    public void update(float deltaTime) {
-        movementProgress = continueProgress(movementProgress, deltaTime, movementSpeed);
-        if (isEqual(movementProgress, 1f)) {
-            coordinates.set(destinationCoordinates);
+    @Override
+    public void hit(int damage) {
+        health -= damage;
+        if (!isAlive()) {
+            field.remove(this);
         }
+    }
+
+    public boolean isAlive() {
+        return health > 0;
+    }
+
+    public int getHealth() {
+        return health;
     }
 
     public GridPoint2 getCoordinates() {
@@ -59,6 +99,6 @@ public class Tank implements Movable, Obstacle {
     }
 
     public float getRotation() {
-        return rotation;
+        return direction.getRotation();
     }
 }

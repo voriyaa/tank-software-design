@@ -23,4 +23,17 @@ class TreeTest {
         assertTrue(tree.occupies(new GridPoint2(1, 3)));
         assertFalse(tree.occupies(new GridPoint2(1, 2)));
     }
+
+    @Test
+    void hitDoesNotDestroyTree() {
+        GameField field = new GameField(10, 8);
+        Tree tree = new Tree(new GridPoint2(1, 3));
+        field.add(tree);
+
+        tree.hit(1);
+        tree.live(1f);
+
+        assertTrue(field.contains(tree));
+        assertEquals(new GridPoint2(1, 3), tree.getCoordinates());
+    }
 }
