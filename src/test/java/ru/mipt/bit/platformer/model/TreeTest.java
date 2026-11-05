@@ -36,4 +36,23 @@ class TreeTest {
         assertTrue(field.contains(tree));
         assertEquals(new GridPoint2(1, 3), tree.getCoordinates());
     }
+
+    @Test
+    void doesNotKeepReferenceToPoint() {
+        GridPoint2 point = new GridPoint2(1, 3);
+        Tree tree = new Tree(point);
+
+        point.set(5, 5);
+
+        assertEquals(new GridPoint2(1, 3), tree.getCoordinates());
+    }
+
+    @Test
+    void returnedCoordinatesAreCopy() {
+        Tree tree = new Tree(new GridPoint2(1, 3));
+
+        tree.getCoordinates().set(5, 5);
+
+        assertEquals(new GridPoint2(1, 3), tree.getCoordinates());
+    }
 }

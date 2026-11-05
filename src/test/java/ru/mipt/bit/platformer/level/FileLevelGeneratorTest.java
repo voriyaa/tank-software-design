@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FileLevelGeneratorTest {
 
     private static Level generate(String text) {
-        return new FileLevelGenerator(new StringReader(text)).generate();
+        return new FileLevelGenerator(new StringReader(text), 10, 8).generate();
     }
 
     private static Set<GridPoint2> treePositions(Level level) {
@@ -36,6 +36,8 @@ class FileLevelGeneratorTest {
                 "_____X____\n" +
                 "__________\n");
 
+        assertEquals(10, level.getWidth());
+        assertEquals(6, level.getHeight());
         assertEquals(new GridPoint2(5, 1), level.getPlayerPosition());
         assertEquals(15, level.getTrees().size());
         assertTrue(treePositions(level).contains(new GridPoint2(3, 5)));
@@ -81,5 +83,23 @@ class FileLevelGeneratorTest {
     @Test
     void failsOnUnknownSymbol() {
         assertThrows(IllegalArgumentException.class, () -> generate("X_?\n"));
+    }
+
+    @Test
+    void failsWhenLevelIsWiderThanMap() {
+        assertThrows(IllegalArgumentException.class, () -> generate("X__________\n"));
+    }
+
+    @Test
+    void failsWhenLevelIsHigherThanMap() {
+        assertThrows(IllegalArgumentException.class, () -> generate("X\n_\n_\n_\n_\n_\n_\n_\n_\n"));
+    }
+
+    @Test
+    void levelOfMapSizeIsAccepted() {
+        Level level = generate("X_________\n_\n_\n_\n_\n_\n_\n_\n");
+
+        assertEquals(10, level.getWidth());
+        assertEquals(8, level.getHeight());
     }
 }

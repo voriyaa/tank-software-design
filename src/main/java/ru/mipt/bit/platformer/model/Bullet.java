@@ -53,11 +53,11 @@ public class Bullet implements GameObject {
     }
 
     public GridPoint2 getCoordinates() {
-        return coordinates;
+        return new GridPoint2(coordinates);
     }
 
     public GridPoint2 getDestinationCoordinates() {
-        return destinationCoordinates;
+        return new GridPoint2(destinationCoordinates);
     }
 
     public float getMovementProgress() {

@@ -55,11 +55,10 @@ public class GameDesktopLauncher implements ApplicationListener {
     public void create() {
         batch = new SpriteBatch();
         graphicsLevel = new GraphicsLevel("level.tmx", batch);
-        TiledMapTileLayer groundLayer = graphicsLevel.getGroundLayer();
-        field = new GameField(groundLayer.getWidth(), groundLayer.getHeight());
-        field.addListener(graphicsLevel);
 
         Level level = createLevelGenerator().generate();
+        field = new GameField(level.getWidth(), level.getHeight());
+        field.addListener(graphicsLevel);
         for (Tree tree : level.getTrees()) {
             field.add(tree);
         }
@@ -85,10 +84,11 @@ public class GameDesktopLauncher implements ApplicationListener {
     }
 
     private LevelGenerator createLevelGenerator() {
-        if (fileLevel) {
-            return new FileLevelGenerator(Gdx.files.internal("level.txt").reader());
-        }
         TiledMapTileLayer groundLayer = graphicsLevel.getGroundLayer();
+        if (fileLevel) {
+            return new FileLevelGenerator(Gdx.files.internal("level.txt").reader(),
+                    groundLayer.getWidth(), groundLayer.getHeight());
+        }
         return new RandomLevelGenerator(groundLayer.getWidth(), groundLayer.getHeight(),
                 RANDOM_TREE_COUNT, AI_TANK_COUNT, random);
     }

@@ -21,6 +21,15 @@ class BulletTest {
     }
 
     @Test
+    void returnedCoordinatesAreCopies() {
+        bullet.getCoordinates().set(5, 5);
+        bullet.getDestinationCoordinates().set(5, 5);
+
+        assertEquals(new GridPoint2(2, 1), bullet.getCoordinates());
+        assertEquals(new GridPoint2(2, 1), bullet.getDestinationCoordinates());
+    }
+
+    @Test
     void startsFlyingToNextCell() {
         bullet.live(0f);
 

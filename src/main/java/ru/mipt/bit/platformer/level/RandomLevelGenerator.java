@@ -43,6 +43,6 @@ public class RandomLevelGenerator implements LevelGenerator {
             trees.add(new Tree(cell));
         }
         List<GridPoint2> aiTankPositions = new ArrayList<>(cells.subList(treeCount + 1, treeCount + aiTankCount + 1));
-        return new Level(cells.get(0), trees, aiTankPositions);
+        return new Level(width, height, cells.get(0), trees, aiTankPositions);
     }
 }
