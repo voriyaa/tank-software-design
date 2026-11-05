@@ -78,8 +78,8 @@ public class GameDesktopLauncher implements ApplicationListener {
         float deltaTime = Gdx.graphics.getDeltaTime();
 
         inputController.handleInput();
-        tankGraphics.updatePosition();
         tank.update(deltaTime);
+        tankGraphics.updatePosition();
 
         // render each tile of the level
         levelGraphics.render();
