@@ -41,6 +41,15 @@ class TankTest {
     }
 
     @Test
+    void returnedCoordinatesAreCopies() {
+        tank.getCoordinates().set(5, 5);
+        tank.getDestinationCoordinates().set(5, 5);
+
+        assertEquals(new GridPoint2(1, 1), tank.getCoordinates());
+        assertEquals(new GridPoint2(1, 1), tank.getDestinationCoordinates());
+    }
+
+    @Test
     void moveToFreeCellStartsMovement() {
         tank.move(Direction.RIGHT);
 
