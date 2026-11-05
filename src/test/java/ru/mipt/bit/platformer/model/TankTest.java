@@ -17,7 +17,7 @@ class TankTest {
 
     @BeforeEach
     void setUp() {
-        field = new GameField(Collections.singletonList(new Tree(new GridPoint2(1, 3))));
+        field = new GameField(10, 8, Collections.singletonList(new Tree(new GridPoint2(1, 3))));
         tank = new Tank(new GridPoint2(1, 1), 0.4f, field);
     }
 
@@ -106,5 +106,16 @@ class TankTest {
         assertEquals(1f, tank.getMovementProgress());
         assertEquals(new GridPoint2(0, 1), tank.getCoordinates());
         assertEquals(-180f, tank.getRotation());
+    }
+
+    @Test
+    void stopsAtLevelBorder() {
+        Tank cornerTank = new Tank(new GridPoint2(0, 0), 0.4f, field);
+
+        cornerTank.move(Direction.LEFT);
+        cornerTank.move(Direction.DOWN);
+
+        assertEquals(new GridPoint2(0, 0), cornerTank.getDestinationCoordinates());
+        assertEquals(1f, cornerTank.getMovementProgress());
     }
 }

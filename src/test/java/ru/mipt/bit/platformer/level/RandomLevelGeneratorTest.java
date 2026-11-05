@@ -20,6 +20,14 @@ class RandomLevelGeneratorTest {
     }
 
     @Test
+    void levelHasGivenSize() {
+        Level level = new RandomLevelGenerator(10, 8, 5, new Random(1)).generate();
+
+        assertEquals(10, level.getWidth());
+        assertEquals(8, level.getHeight());
+    }
+
+    @Test
     void generatesRequestedNumberOfTrees() {
         Level level = new RandomLevelGenerator(10, 8, 15, new Random(1)).generate();
 

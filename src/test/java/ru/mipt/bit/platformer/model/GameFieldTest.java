@@ -13,7 +13,7 @@ class GameFieldTest {
 
     @Test
     void cellWithTreeIsNotFree() {
-        GameField field = new GameField(Arrays.asList(new Tree(new GridPoint2(1, 3)), new Tree(new GridPoint2(4, 4))));
+        GameField field = new GameField(10, 8, Arrays.asList(new Tree(new GridPoint2(1, 3)), new Tree(new GridPoint2(4, 4))));
 
         assertFalse(field.isFree(new GridPoint2(1, 3)));
         assertFalse(field.isFree(new GridPoint2(4, 4)));
@@ -21,7 +21,7 @@ class GameFieldTest {
 
     @Test
     void cellWithoutTreeIsFree() {
-        GameField field = new GameField(Collections.singletonList(new Tree(new GridPoint2(1, 3))));
+        GameField field = new GameField(10, 8, Collections.singletonList(new Tree(new GridPoint2(1, 3))));
 
         assertTrue(field.isFree(new GridPoint2(1, 2)));
     }
@@ -29,15 +29,26 @@ class GameFieldTest {
     @Test
     void anyObstacleBlocksCell() {
         Obstacle wall = () -> new GridPoint2(2, 2);
-        GameField field = new GameField(Collections.singletonList(wall));
+        GameField field = new GameField(10, 8, Collections.singletonList(wall));
 
         assertFalse(field.isFree(new GridPoint2(2, 2)));
     }
 
     @Test
     void emptyFieldIsFree() {
-        GameField field = new GameField(Collections.emptyList());
+        GameField field = new GameField(10, 8, Collections.emptyList());
 
         assertTrue(field.isFree(new GridPoint2(0, 0)));
+    }
+
+    @Test
+    void cellsOutsideFieldAreNotFree() {
+        GameField field = new GameField(10, 8, Collections.emptyList());
+
+        assertFalse(field.isFree(new GridPoint2(-1, 0)));
+        assertFalse(field.isFree(new GridPoint2(0, -1)));
+        assertFalse(field.isFree(new GridPoint2(10, 0)));
+        assertFalse(field.isFree(new GridPoint2(0, 8)));
+        assertTrue(field.isFree(new GridPoint2(9, 7)));
     }
 }

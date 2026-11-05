@@ -17,14 +17,28 @@ public class FileLevelGenerator implements LevelGenerator {
     private static final char EMPTY = '_';
 
     private final Reader reader;
+    private final int maxWidth;
+    private final int maxHeight;
 
-    public FileLevelGenerator(Reader reader) {
+    public FileLevelGenerator(Reader reader, int maxWidth, int maxHeight) {
         this.reader = reader;
+        this.maxWidth = maxWidth;
+        this.maxHeight = maxHeight;
     }
 
     @Override
     public Level generate() {
         List<String> lines = readLines();
+        int height = lines.size();
+        int width = 0;
+        for (String line : lines) {
+            width = Math.max(width, line.length());
+        }
+        if (width > maxWidth || height > maxHeight) {
+            throw new IllegalArgumentException("Level " + width + "x" + height
+                    + " is bigger than map " + maxWidth + "x" + maxHeight);
+        }
+
         GridPoint2 playerPosition = null;
         List<Tree> trees = new ArrayList<>();
 
@@ -49,7 +63,7 @@ public class FileLevelGenerator implements LevelGenerator {
         if (playerPosition == null) {
             throw new IllegalArgumentException("Level has no player");
         }
-        return new Level(playerPosition, trees);
+        return new Level(width, height, playerPosition, trees);
     }
 
     private List<String> readLines() {

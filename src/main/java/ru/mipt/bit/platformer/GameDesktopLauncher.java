@@ -58,7 +58,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         TileMovement tileMovement = new TileMovement(levelGraphics.getGroundLayer(), Interpolation.smooth);
 
         Level level = createLevelGenerator().generate();
-        GameField field = new GameField(level.getTrees());
+        GameField field = new GameField(level.getWidth(), level.getHeight(), level.getTrees());
         tank = new Tank(level.getPlayerPosition(), TANK_MOVEMENT_SPEED, field);
 
         tankGraphics = new TankGraphics(tank, tileMovement, "images/tank_blue.png");
@@ -76,11 +76,11 @@ public class GameDesktopLauncher implements ApplicationListener {
     }
 
     private LevelGenerator createLevelGenerator() {
+        TiledMapTileLayer groundLayer = levelGraphics.getGroundLayer();
         if (randomLevel) {
-            TiledMapTileLayer groundLayer = levelGraphics.getGroundLayer();
             return new RandomLevelGenerator(groundLayer.getWidth(), groundLayer.getHeight(), RANDOM_TREE_COUNT, new Random());
         }
-        return new FileLevelGenerator(Gdx.files.internal("level.txt").reader());
+        return new FileLevelGenerator(Gdx.files.internal("level.txt").reader(), groundLayer.getWidth(), groundLayer.getHeight());
     }
 
     private void addMoveAction(Direction direction, int... keys) {

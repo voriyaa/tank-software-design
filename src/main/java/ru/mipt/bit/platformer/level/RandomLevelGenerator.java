@@ -39,6 +39,6 @@ public class RandomLevelGenerator implements LevelGenerator {
         for (GridPoint2 cell : cells.subList(1, treeCount + 1)) {
             trees.add(new Tree(cell));
         }
-        return new Level(cells.get(0), trees);
+        return new Level(width, height, cells.get(0), trees);
     }
 }
