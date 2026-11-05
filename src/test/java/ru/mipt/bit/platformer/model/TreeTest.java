@@ -25,6 +25,19 @@ class TreeTest {
     }
 
     @Test
+    void hitDoesNotDestroyTree() {
+        GameField field = new GameField(10, 8);
+        Tree tree = new Tree(new GridPoint2(1, 3));
+        field.add(tree);
+
+        tree.hit(1);
+        tree.live(1f);
+
+        assertTrue(field.contains(tree));
+        assertEquals(new GridPoint2(1, 3), tree.getCoordinates());
+    }
+
+    @Test
     void doesNotKeepReferenceToPoint() {
         GridPoint2 point = new GridPoint2(1, 3);
         Tree tree = new Tree(point);

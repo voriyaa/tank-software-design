@@ -8,16 +8,13 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Interpolation;
 import ru.mipt.bit.platformer.control.Command;
 import ru.mipt.bit.platformer.control.ControlStrategy;
 import ru.mipt.bit.platformer.control.KeyboardStrategy;
 import ru.mipt.bit.platformer.control.MoveCommand;
 import ru.mipt.bit.platformer.control.RandomStrategy;
-import ru.mipt.bit.platformer.graphics.LevelGraphics;
-import ru.mipt.bit.platformer.graphics.Renderable;
-import ru.mipt.bit.platformer.graphics.TankGraphics;
-import ru.mipt.bit.platformer.graphics.TreeGraphics;
+import ru.mipt.bit.platformer.control.ShootCommand;
+import ru.mipt.bit.platformer.graphics.GraphicsLevel;
 import ru.mipt.bit.platformer.level.FileLevelGenerator;
 import ru.mipt.bit.platformer.level.Level;
 import ru.mipt.bit.platformer.level.LevelGenerator;
@@ -26,7 +23,6 @@ import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameField;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
-import ru.mipt.bit.platformer.util.TileMovement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +34,7 @@ import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 public class GameDesktopLauncher implements ApplicationListener {
 
     private static final float TANK_MOVEMENT_SPEED = 0.4f;
+    private static final int TANK_HEALTH = 3;
     private static final int RANDOM_TREE_COUNT = 10;
     private static final int AI_TANK_COUNT = 3;
 
@@ -45,13 +42,10 @@ public class GameDesktopLauncher implements ApplicationListener {
     private final Random random = new Random();
 
     private Batch batch;
-    private LevelGraphics levelGraphics;
-    private TileMovement tileMovement;
+    private GraphicsLevel graphicsLevel;
     private GameField field;
 
-    private final List<Tank> tanks = new ArrayList<>();
     private final List<ControlStrategy> strategies = new ArrayList<>();
-    private final List<Renderable> renderables = new ArrayList<>();
 
     public GameDesktopLauncher(boolean fileLevel) {
         this.fileLevel = fileLevel;
@@ -60,32 +54,37 @@ public class GameDesktopLauncher implements ApplicationListener {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        levelGraphics = new LevelGraphics("level.tmx", batch);
-        TiledMapTileLayer groundLayer = levelGraphics.getGroundLayer();
-        tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
+        graphicsLevel = new GraphicsLevel("level.tmx", batch);
 
         Level level = createLevelGenerator().generate();
         field = new GameField(level.getWidth(), level.getHeight());
+        field.addListener(graphicsLevel);
         for (Tree tree : level.getTrees()) {
-            field.addObstacle(tree);
-            renderables.add(new TreeGraphics(tree, groundLayer, "images/greenTree.png"));
+            field.add(tree);
         }
 
-        Tank player = addTank(level.getPlayerPosition());
+        Tank player = createTank(level.getPlayerPosition());
         KeyboardStrategy keyboard = new KeyboardStrategy(Gdx.input::isKeyPressed);
         addMoveCommand(keyboard, player, Direction.UP, UP, W);
         addMoveCommand(keyboard, player, Direction.LEFT, LEFT, A);
         addMoveCommand(keyboard, player, Direction.DOWN, DOWN, S);
         addMoveCommand(keyboard, player, Direction.RIGHT, RIGHT, D);
+        keyboard.addCommand(SPACE, new ShootCommand(player));
         strategies.add(keyboard);
 
         for (GridPoint2 position : level.getAiTankPositions()) {
-            strategies.add(new RandomStrategy(addTank(position), random));
+            Tank tank = createTank(position);
+            List<Command> commands = new ArrayList<>();
+            for (Direction direction : Direction.values()) {
+                commands.add(new MoveCommand(tank, direction));
+            }
+            commands.add(new ShootCommand(tank));
+            strategies.add(new RandomStrategy(commands, random));
         }
     }
 
     private LevelGenerator createLevelGenerator() {
-        TiledMapTileLayer groundLayer = levelGraphics.getGroundLayer();
+        TiledMapTileLayer groundLayer = graphicsLevel.getGroundLayer();
         if (fileLevel) {
             return new FileLevelGenerator(Gdx.files.internal("level.txt").reader(),
                     groundLayer.getWidth(), groundLayer.getHeight());
@@ -94,11 +93,9 @@ public class GameDesktopLauncher implements ApplicationListener {
                 RANDOM_TREE_COUNT, AI_TANK_COUNT, random);
     }
 
-    private Tank addTank(GridPoint2 position) {
-        Tank tank = new Tank(position, TANK_MOVEMENT_SPEED, field);
-        field.addObstacle(tank);
-        tanks.add(tank);
-        renderables.add(new TankGraphics(tank, tileMovement, "images/tank_blue.png"));
+    private Tank createTank(GridPoint2 position) {
+        Tank tank = new Tank(position, TANK_MOVEMENT_SPEED, TANK_HEALTH, field);
+        field.add(tank);
         return tank;
     }
 
@@ -118,27 +115,17 @@ public class GameDesktopLauncher implements ApplicationListener {
         // get time passed since the last render
         float deltaTime = Gdx.graphics.getDeltaTime();
 
+        List<Command> commands = new ArrayList<>();
         for (ControlStrategy strategy : strategies) {
-            for (Command command : strategy.getCommands()) {
-                command.execute();
-            }
+            commands.addAll(strategy.getCommands());
         }
-        for (Tank tank : tanks) {
-            tank.update(deltaTime);
+        for (Command command : commands) {
+            command.execute();
         }
 
-        // render each tile of the level
-        levelGraphics.render();
+        field.live(deltaTime);
 
-        // start recording all drawing commands
-        batch.begin();
-
-        for (Renderable renderable : renderables) {
-            renderable.render(batch);
-        }
-
-        // submit all drawing requests
-        batch.end();
+        graphicsLevel.render();
     }
 
     @Override
@@ -159,10 +146,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     @Override
     public void dispose() {
         // dispose of all the native resources (classes which implement com.badlogic.gdx.utils.Disposable)
-        for (Renderable renderable : renderables) {
-            renderable.dispose();
-        }
-        levelGraphics.dispose();
+        graphicsLevel.dispose();
         batch.dispose();
     }
 
