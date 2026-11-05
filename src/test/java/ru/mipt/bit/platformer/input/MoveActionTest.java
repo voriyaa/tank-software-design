@@ -1,25 +1,22 @@
 package ru.mipt.bit.platformer.input;
 
-import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.Test;
 import ru.mipt.bit.platformer.model.Direction;
-import ru.mipt.bit.platformer.model.GameField;
-import ru.mipt.bit.platformer.model.Tank;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MoveActionTest {
 
     @Test
-    void executeMovesTankInDirection() {
-        Tank tank = new Tank(new GridPoint2(1, 1));
-        GameField field = new GameField(Collections.emptyList());
+    void executeMovesInDirection() {
+        List<Direction> moves = new ArrayList<>();
 
-        new MoveAction(tank, Direction.DOWN, field).execute();
+        new MoveAction(moves::add, Direction.DOWN).execute();
 
-        assertEquals(new GridPoint2(1, 0), tank.getDestinationCoordinates());
-        assertEquals(-90f, tank.getRotation());
+        assertEquals(Collections.singletonList(Direction.DOWN), moves);
     }
 }

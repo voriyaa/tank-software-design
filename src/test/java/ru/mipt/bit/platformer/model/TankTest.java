@@ -18,7 +18,7 @@ class TankTest {
     @BeforeEach
     void setUp() {
         field = new GameField(Collections.singletonList(new Tree(new GridPoint2(1, 3))));
-        tank = new Tank(new GridPoint2(1, 1));
+        tank = new Tank(new GridPoint2(1, 1), 0.4f, field);
     }
 
     @Test
@@ -32,7 +32,7 @@ class TankTest {
     @Test
     void doesNotKeepReferenceToStartPoint() {
         GridPoint2 start = new GridPoint2(1, 1);
-        Tank tank = new Tank(start);
+        Tank tank = new Tank(start, 0.4f, field);
 
         start.set(5, 5);
 
@@ -40,8 +40,17 @@ class TankTest {
     }
 
     @Test
+    void returnedCoordinatesAreCopies() {
+        tank.getCoordinates().set(5, 5);
+        tank.getDestinationCoordinates().set(5, 5);
+
+        assertEquals(new GridPoint2(1, 1), tank.getCoordinates());
+        assertEquals(new GridPoint2(1, 1), tank.getDestinationCoordinates());
+    }
+
+    @Test
     void moveToFreeCellStartsMovement() {
-        tank.move(Direction.RIGHT, field);
+        tank.move(Direction.RIGHT);
 
         assertEquals(new GridPoint2(1, 1), tank.getCoordinates());
         assertEquals(new GridPoint2(2, 1), tank.getDestinationCoordinates());
@@ -51,9 +60,9 @@ class TankTest {
 
     @Test
     void moveToTreeOnlyRotates() {
-        tank.move(Direction.UP, field);
+        tank.move(Direction.UP);
         tank.update(0.4f);
-        tank.move(Direction.UP, field);
+        tank.move(Direction.UP);
 
         assertEquals(new GridPoint2(1, 2), tank.getDestinationCoordinates());
         assertEquals(1f, tank.getMovementProgress());
@@ -62,8 +71,8 @@ class TankTest {
 
     @Test
     void moveIsIgnoredWhileMoving() {
-        tank.move(Direction.RIGHT, field);
-        tank.move(Direction.DOWN, field);
+        tank.move(Direction.RIGHT);
+        tank.move(Direction.DOWN);
 
         assertEquals(new GridPoint2(2, 1), tank.getDestinationCoordinates());
         assertEquals(0f, tank.getRotation());
@@ -71,7 +80,7 @@ class TankTest {
 
     @Test
     void updateAdvancesProgress() {
-        tank.move(Direction.LEFT, field);
+        tank.move(Direction.LEFT);
         tank.update(0.2f);
 
         assertEquals(0.5f, tank.getMovementProgress(), EPSILON);
@@ -79,8 +88,18 @@ class TankTest {
     }
 
     @Test
+    void movementSpeedIsTakenFromConstructor() {
+        Tank slowTank = new Tank(new GridPoint2(1, 1), 0.8f, field);
+
+        slowTank.move(Direction.RIGHT);
+        slowTank.update(0.2f);
+
+        assertEquals(0.25f, slowTank.getMovementProgress(), EPSILON);
+    }
+
+    @Test
     void updateFinishesMovement() {
-        tank.move(Direction.LEFT, field);
+        tank.move(Direction.LEFT);
         tank.update(0.2f);
         tank.update(0.3f);
 

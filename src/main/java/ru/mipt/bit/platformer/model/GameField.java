@@ -4,17 +4,18 @@ import com.badlogic.gdx.math.GridPoint2;
 
 import java.util.List;
 
-public class GameField {
+public class GameField implements CollisionDetector {
 
-    private final List<Tree> trees;
+    private final List<Obstacle> obstacles;
 
-    public GameField(List<Tree> trees) {
-        this.trees = trees;
+    public GameField(List<Obstacle> obstacles) {
+        this.obstacles = obstacles;
     }
 
+    @Override
     public boolean isFree(GridPoint2 point) {
-        for (Tree tree : trees) {
-            if (tree.getCoordinates().equals(point)) {
+        for (Obstacle obstacle : obstacles) {
+            if (obstacle.getCoordinates().equals(point)) {
                 return false;
             }
         }

@@ -15,8 +15,8 @@ public class LevelGraphics {
     private final MapRenderer levelRenderer;
     private final TiledMapTileLayer groundLayer;
 
-    public LevelGraphics(Batch batch) {
-        level = new TmxMapLoader().load("level.tmx");
+    public LevelGraphics(String mapPath, Batch batch) {
+        level = new TmxMapLoader().load(mapPath);
         levelRenderer = createSingleLayerMapRenderer(level, batch);
         groundLayer = getSingleLayer(level);
     }

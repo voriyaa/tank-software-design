@@ -1,23 +1,20 @@
 package ru.mipt.bit.platformer.input;
 
 import ru.mipt.bit.platformer.model.Direction;
-import ru.mipt.bit.platformer.model.GameField;
-import ru.mipt.bit.platformer.model.Tank;
+import ru.mipt.bit.platformer.model.Movable;
 
 public class MoveAction implements Action {
 
-    private final Tank tank;
+    private final Movable movable;
     private final Direction direction;
-    private final GameField field;
 
-    public MoveAction(Tank tank, Direction direction, GameField field) {
-        this.tank = tank;
+    public MoveAction(Movable movable, Direction direction) {
+        this.movable = movable;
         this.direction = direction;
-        this.field = field;
     }
 
     @Override
     public void execute() {
-        tank.move(direction, field);
+        movable.move(direction);
     }
 }
