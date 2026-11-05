@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.GridPoint2;
 import static com.badlogic.gdx.math.MathUtils.isEqual;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
-public class Tank implements Movable {
+public class Tank implements Movable, Obstacle {
 
     private final float movementSpeed;
     private final CollisionDetector collisionDetector;
@@ -32,6 +32,11 @@ public class Tank implements Movable {
             movementProgress = 0f;
         }
         rotation = direction.getRotation();
+    }
+
+    @Override
+    public boolean occupies(GridPoint2 point) {
+        return coordinates.equals(point) || destinationCoordinates.equals(point);
     }
 
     public void update(float deltaTime) {

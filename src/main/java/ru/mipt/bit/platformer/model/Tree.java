@@ -10,8 +10,12 @@ public class Tree implements Obstacle {
         this.coordinates = new GridPoint2(coordinates);
     }
 
-    @Override
     public GridPoint2 getCoordinates() {
         return new GridPoint2(coordinates);
+    }
+
+    @Override
+    public boolean occupies(GridPoint2 point) {
+        return coordinates.equals(point);
     }
 }
