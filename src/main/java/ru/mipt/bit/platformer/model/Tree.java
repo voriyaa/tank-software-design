@@ -7,11 +7,11 @@ public class Tree implements Obstacle {
     private final GridPoint2 coordinates;
 
     public Tree(GridPoint2 coordinates) {
-        this.coordinates = coordinates;
+        this.coordinates = new GridPoint2(coordinates);
     }
 
     @Override
     public GridPoint2 getCoordinates() {
-        return coordinates;
+        return new GridPoint2(coordinates);
     }
 }
