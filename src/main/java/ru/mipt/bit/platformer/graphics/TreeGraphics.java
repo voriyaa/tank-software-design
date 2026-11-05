@@ -1,31 +1,25 @@
-package ru.mipt.bit.platformer;
+package ru.mipt.bit.platformer.graphics;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
+import ru.mipt.bit.platformer.model.Tree;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
-public class Tree {
+public class TreeGraphics {
 
     private final Texture texture;
     private final TextureRegion graphics;
     private final Rectangle rectangle;
-    private final GridPoint2 coordinates;
 
-    public Tree(GridPoint2 coordinates, TiledMapTileLayer groundLayer) {
+    public TreeGraphics(Tree tree, TiledMapTileLayer groundLayer) {
         texture = new Texture("images/greenTree.png");
         graphics = new TextureRegion(texture);
         rectangle = createBoundingRectangle(graphics);
-        this.coordinates = coordinates;
-        moveRectangleAtTileCenter(groundLayer, rectangle, coordinates);
-    }
-
-    public GridPoint2 getCoordinates() {
-        return coordinates;
+        moveRectangleAtTileCenter(groundLayer, rectangle, tree.getCoordinates());
     }
 
     public void render(Batch batch) {
