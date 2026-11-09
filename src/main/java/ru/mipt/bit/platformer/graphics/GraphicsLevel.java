@@ -30,15 +30,18 @@ public class GraphicsLevel implements FieldListener {
     private final MapRenderer levelRenderer;
     private final TiledMapTileLayer groundLayer;
     private final TileMovement tileMovement;
+    private final HealthBarToggle healthBarToggle;
 
     private final Texture tankTexture;
     private final Texture treeTexture;
     private final Texture bulletTexture;
+    private final Texture healthBarTexture;
 
     private final Map<GameObject, Renderable> graphics = new LinkedHashMap<>();
 
-    public GraphicsLevel(String mapPath, Batch batch) {
+    public GraphicsLevel(String mapPath, Batch batch, HealthBarToggle healthBarToggle) {
         this.batch = batch;
+        this.healthBarToggle = healthBarToggle;
         level = new TmxMapLoader().load(mapPath);
         levelRenderer = createSingleLayerMapRenderer(level, batch);
         groundLayer = getSingleLayer(level);
@@ -47,12 +50,22 @@ public class GraphicsLevel implements FieldListener {
         tankTexture = new Texture("images/tank_blue.png");
         treeTexture = new Texture("images/greenTree.png");
         bulletTexture = createBulletTexture();
+        healthBarTexture = createHealthBarTexture();
     }
 
     private static Texture createBulletTexture() {
         Pixmap pixmap = new Pixmap(20, 20, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.YELLOW);
         pixmap.fillCircle(10, 10, 9);
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
+    }
+
+    private static Texture createHealthBarTexture() {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
         Texture texture = new Texture(pixmap);
         pixmap.dispose();
         return texture;
@@ -65,7 +78,9 @@ public class GraphicsLevel implements FieldListener {
     @Override
     public void onObjectAdded(GameObject object) {
         if (object instanceof Tank) {
-            graphics.put(object, new TankGraphics((Tank) object, tileMovement, new TextureRegion(tankTexture)));
+            Tank tank = (Tank) object;
+            TankGraphics tankGraphics = new TankGraphics(tank, tileMovement, new TextureRegion(tankTexture));
+            graphics.put(object, new HealthBarDecorator(tankGraphics, tank, healthBarToggle, healthBarTexture));
         } else if (object instanceof Tree) {
             graphics.put(object, new TreeGraphics((Tree) object, groundLayer, new TextureRegion(treeTexture)));
         } else if (object instanceof Bullet) {
@@ -92,6 +107,7 @@ public class GraphicsLevel implements FieldListener {
         tankTexture.dispose();
         treeTexture.dispose();
         bulletTexture.dispose();
+        healthBarTexture.dispose();
         level.dispose();
     }
 }
