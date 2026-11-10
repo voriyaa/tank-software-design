@@ -2,18 +2,22 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameField implements CollisionDetector {
 
     private final int width;
     private final int height;
-    private final List<? extends Obstacle> obstacles;
+    private final List<Obstacle> obstacles = new ArrayList<>();
 
-    public GameField(int width, int height, List<? extends Obstacle> obstacles) {
+    public GameField(int width, int height) {
         this.width = width;
         this.height = height;
-        this.obstacles = obstacles;
+    }
+
+    public void addObstacle(Obstacle obstacle) {
+        obstacles.add(obstacle);
     }
 
     @Override
@@ -22,7 +26,7 @@ public class GameField implements CollisionDetector {
             return false;
         }
         for (Obstacle obstacle : obstacles) {
-            if (obstacle.getCoordinates().equals(point)) {
+            if (obstacle.occupies(point)) {
                 return false;
             }
         }

@@ -1,14 +1,14 @@
-package ru.mipt.bit.platformer.input;
+package ru.mipt.bit.platformer.control;
 
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.Movable;
 
-public class MoveAction implements Action {
+public class MoveCommand implements Command {
 
     private final Movable movable;
     private final Direction direction;
 
-    public MoveAction(Movable movable, Direction direction) {
+    public MoveCommand(Movable movable, Direction direction) {
         this.movable = movable;
         this.direction = direction;
     }

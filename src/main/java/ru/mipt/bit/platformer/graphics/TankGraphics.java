@@ -26,13 +26,10 @@ public class TankGraphics implements Renderable {
         rectangle = createBoundingRectangle(graphics);
     }
 
-    public void updatePosition() {
-        tileMovement.moveRectangleBetweenTileCenters(rectangle, tank.getCoordinates(),
-                tank.getDestinationCoordinates(), tank.getMovementProgress());
-    }
-
     @Override
     public void render(Batch batch) {
+        tileMovement.moveRectangleBetweenTileCenters(rectangle, tank.getCoordinates(),
+                tank.getDestinationCoordinates(), tank.getMovementProgress());
         drawTextureRegionUnscaled(batch, graphics, rectangle, tank.getRotation());
     }
 

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class FileLevelGenerator implements LevelGenerator {
@@ -63,7 +64,7 @@ public class FileLevelGenerator implements LevelGenerator {
         if (playerPosition == null) {
             throw new IllegalArgumentException("Level has no player");
         }
-        return new Level(width, height, playerPosition, trees);
+        return new Level(width, height, playerPosition, trees, Collections.emptyList());
     }
 
     private List<String> readLines() {
