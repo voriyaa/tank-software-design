@@ -50,8 +50,9 @@ public class Tank implements GameObject, Movable, Shooter {
         }
         timeSinceShot = 0f;
 
-        GridPoint2 start = direction.apply(destinationCoordinates);
-        if (field.isFree(start)) {
+        GridPoint2 start = direction.apply(coordinates);
+        boolean reservedByMe = start.equals(destinationCoordinates);
+        if (reservedByMe || field.isFree(start)) {
             field.add(new Bullet(start, direction, BULLET_SPEED, BULLET_DAMAGE, field));
         } else {
             field.hit(start, BULLET_DAMAGE);
