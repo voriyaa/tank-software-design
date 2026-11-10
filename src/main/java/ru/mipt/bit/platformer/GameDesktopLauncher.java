@@ -17,8 +17,11 @@ import ru.mipt.bit.platformer.control.KeyboardStrategy;
 import ru.mipt.bit.platformer.control.MoveCommand;
 import ru.mipt.bit.platformer.control.RandomStrategy;
 import ru.mipt.bit.platformer.control.ShootCommand;
+import ru.mipt.bit.platformer.control.ToggleHealthBarsCommand;
 import ru.mipt.bit.platformer.graphics.BulletGraphics;
 import ru.mipt.bit.platformer.graphics.GraphicsLevel;
+import ru.mipt.bit.platformer.graphics.HealthBarDecorator;
+import ru.mipt.bit.platformer.graphics.HealthBarToggle;
 import ru.mipt.bit.platformer.graphics.TankGraphics;
 import ru.mipt.bit.platformer.graphics.TreeGraphics;
 import ru.mipt.bit.platformer.level.FileLevelGenerator;
@@ -39,11 +42,12 @@ import java.util.Random;
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createCircleTexture;
+import static ru.mipt.bit.platformer.util.GdxGameUtils.createPixelTexture;
 
 public class GameDesktopLauncher implements ApplicationListener {
 
     private static final float TANK_MOVEMENT_SPEED = 0.4f;
-    private static final int TANK_HEALTH = 3;
+    private static final int TANK_HEALTH = 100;
     private static final int RANDOM_TREE_COUNT = 10;
     private static final int AI_TANK_COUNT = 3;
 
@@ -63,8 +67,9 @@ public class GameDesktopLauncher implements ApplicationListener {
     @Override
     public void create() {
         batch = new SpriteBatch();
+        HealthBarToggle healthBarToggle = new HealthBarToggle();
         graphicsLevel = new GraphicsLevel("level.tmx", batch);
-        registerGraphics();
+        registerGraphics(healthBarToggle);
 
         Level level = createLevelGenerator().generate();
         field = new GameField(level.getWidth(), level.getHeight());
@@ -82,6 +87,10 @@ public class GameDesktopLauncher implements ApplicationListener {
         keyboard.addCommand(SPACE, new ShootCommand(player));
         strategies.add(keyboard);
 
+        KeyboardStrategy keyPresses = new KeyboardStrategy(Gdx.input::isKeyJustPressed);
+        keyPresses.addCommand(L, new ToggleHealthBarsCommand(healthBarToggle));
+        strategies.add(keyPresses);
+
         for (GridPoint2 position : level.getAiTankPositions()) {
             Tank tank = createTank(position);
             List<Command> commands = new ArrayList<>();
@@ -93,14 +102,16 @@ public class GameDesktopLauncher implements ApplicationListener {
         }
     }
 
-    private void registerGraphics() {
+    private void registerGraphics(HealthBarToggle healthBarToggle) {
         TileMovement tileMovement = graphicsLevel.getTileMovement();
         TiledMapTileLayer groundLayer = graphicsLevel.getGroundLayer();
         Texture tankTexture = graphicsLevel.addTexture(new Texture("images/tank_blue.png"));
         Texture treeTexture = graphicsLevel.addTexture(new Texture("images/greenTree.png"));
         Texture bulletTexture = graphicsLevel.addTexture(createCircleTexture(20, Color.YELLOW));
+        Texture healthBarTexture = graphicsLevel.addTexture(createPixelTexture(Color.WHITE));
 
-        graphicsLevel.register(Tank.class, tank -> new TankGraphics(tank, tileMovement, new TextureRegion(tankTexture)));
+        graphicsLevel.register(Tank.class, tank -> new HealthBarDecorator(
+                new TankGraphics(tank, tileMovement, new TextureRegion(tankTexture)), tank, healthBarToggle, healthBarTexture));
         graphicsLevel.register(Tree.class, tree -> new TreeGraphics(tree, groundLayer, new TextureRegion(treeTexture)));
         graphicsLevel.register(Bullet.class, bullet -> new BulletGraphics(bullet, tileMovement, new TextureRegion(bulletTexture)));
     }

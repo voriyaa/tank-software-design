@@ -230,19 +230,19 @@ class TankTest {
 
     @Test
     void shootAtAdjacentTankDamagesItWithoutBullet() {
-        Tank enemy = new Tank(new GridPoint2(2, 1), 0.4f, 3, field);
+        Tank enemy = new Tank(new GridPoint2(2, 1), 0.4f, 100, field);
         field.add(enemy);
         added.clear();
 
         tank.shoot();
 
-        assertEquals(2, enemy.getHealth());
+        assertEquals(75, enemy.getHealth());
         assertTrue(added.isEmpty());
     }
 
     @Test
     void shootAtAdjacentTankCanKillIt() {
-        Tank enemy = new Tank(new GridPoint2(2, 1), 0.4f, 1, field);
+        Tank enemy = new Tank(new GridPoint2(2, 1), 0.4f, 25, field);
         field.add(enemy);
 
         tank.shoot();
@@ -258,6 +258,14 @@ class TankTest {
         borderTank.shoot();
 
         assertTrue(added.isEmpty());
+    }
+
+    @Test
+    void maxHealthIsInitialHealth() {
+        tank.hit(1);
+
+        assertEquals(2, tank.getHealth());
+        assertEquals(3, tank.getMaxHealth());
     }
 
     @Test

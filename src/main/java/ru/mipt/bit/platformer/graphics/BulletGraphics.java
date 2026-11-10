@@ -29,4 +29,9 @@ public class BulletGraphics implements Renderable {
                 bullet.getDestinationCoordinates(), bullet.getMovementProgress());
         drawTextureRegionUnscaled(batch, graphics, rectangle, bullet.getDirection().getRotation());
     }
+
+    @Override
+    public Rectangle getRectangle() {
+        return rectangle;
+    }
 }
