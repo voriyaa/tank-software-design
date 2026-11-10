@@ -203,14 +203,29 @@ class TankTest {
     }
 
     @Test
-    void shootWhileMovingStartsAfterDestination() {
+    void shootWhileMovingStartsFromCurrentPosition() {
         tank.move(Direction.RIGHT);
 
         tank.shoot();
 
         Bullet bullet = (Bullet) added.get(0);
-        assertEquals(new GridPoint2(3, 1), bullet.getCoordinates());
+        assertEquals(new GridPoint2(2, 1), bullet.getCoordinates());
         assertEquals(3, tank.getHealth());
+    }
+
+    @Test
+    void bulletDoesNotHitItsOwner() {
+        tank.move(Direction.RIGHT);
+        tank.shoot();
+        Bullet bullet = (Bullet) added.get(0);
+
+        for (int i = 0; i < 5; i++) {
+            field.live(0.1f);
+        }
+
+        assertEquals(new GridPoint2(2, 1), tank.getCoordinates());
+        assertEquals(3, tank.getHealth());
+        assertTrue(bullet.getCoordinates().x > 2);
     }
 
     @Test

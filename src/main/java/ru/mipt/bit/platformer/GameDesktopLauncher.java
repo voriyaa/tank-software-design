@@ -4,8 +4,11 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
 import ru.mipt.bit.platformer.control.Command;
@@ -14,15 +17,20 @@ import ru.mipt.bit.platformer.control.KeyboardStrategy;
 import ru.mipt.bit.platformer.control.MoveCommand;
 import ru.mipt.bit.platformer.control.RandomStrategy;
 import ru.mipt.bit.platformer.control.ShootCommand;
+import ru.mipt.bit.platformer.graphics.BulletGraphics;
 import ru.mipt.bit.platformer.graphics.GraphicsLevel;
+import ru.mipt.bit.platformer.graphics.TankGraphics;
+import ru.mipt.bit.platformer.graphics.TreeGraphics;
 import ru.mipt.bit.platformer.level.FileLevelGenerator;
 import ru.mipt.bit.platformer.level.Level;
 import ru.mipt.bit.platformer.level.LevelGenerator;
 import ru.mipt.bit.platformer.level.RandomLevelGenerator;
+import ru.mipt.bit.platformer.model.Bullet;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameField;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
+import ru.mipt.bit.platformer.util.TileMovement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +38,7 @@ import java.util.Random;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
+import static ru.mipt.bit.platformer.util.GdxGameUtils.createCircleTexture;
 
 public class GameDesktopLauncher implements ApplicationListener {
 
@@ -55,6 +64,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     public void create() {
         batch = new SpriteBatch();
         graphicsLevel = new GraphicsLevel("level.tmx", batch);
+        registerGraphics();
 
         Level level = createLevelGenerator().generate();
         field = new GameField(level.getWidth(), level.getHeight());
@@ -81,6 +91,18 @@ public class GameDesktopLauncher implements ApplicationListener {
             commands.add(new ShootCommand(tank));
             strategies.add(new RandomStrategy(commands, random));
         }
+    }
+
+    private void registerGraphics() {
+        TileMovement tileMovement = graphicsLevel.getTileMovement();
+        TiledMapTileLayer groundLayer = graphicsLevel.getGroundLayer();
+        Texture tankTexture = graphicsLevel.addTexture(new Texture("images/tank_blue.png"));
+        Texture treeTexture = graphicsLevel.addTexture(new Texture("images/greenTree.png"));
+        Texture bulletTexture = graphicsLevel.addTexture(createCircleTexture(20, Color.YELLOW));
+
+        graphicsLevel.register(Tank.class, tank -> new TankGraphics(tank, tileMovement, new TextureRegion(tankTexture)));
+        graphicsLevel.register(Tree.class, tree -> new TreeGraphics(tree, groundLayer, new TextureRegion(treeTexture)));
+        graphicsLevel.register(Bullet.class, bullet -> new BulletGraphics(bullet, tileMovement, new TextureRegion(bulletTexture)));
     }
 
     private LevelGenerator createLevelGenerator() {
