@@ -1,53 +1,52 @@
 package ru.mipt.bit.platformer.control;
 
 import org.junit.jupiter.api.Test;
-import ru.mipt.bit.platformer.model.Direction;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RandomStrategyTest {
 
-    private final List<Direction> moves = new ArrayList<>();
+    private final Command up = () -> { };
+    private final Command down = () -> { };
+    private final Command shoot = () -> { };
+    private final List<Command> commands = Arrays.asList(up, down, shoot);
 
     @Test
-    void returnsOneMoveCommand() {
-        RandomStrategy strategy = new RandomStrategy(moves::add, new Random(1));
+    void returnsOneOfGivenCommands() {
+        RandomStrategy strategy = new RandomStrategy(commands, new Random(1));
 
-        List<Command> commands = strategy.getCommands();
-        assertEquals(1, commands.size());
+        List<Command> result = strategy.getCommands();
 
-        commands.get(0).execute();
-        assertEquals(1, moves.size());
+        assertEquals(1, result.size());
+        assertTrue(commands.contains(result.get(0)));
     }
 
     @Test
-    void choosesEveryDirection() {
-        RandomStrategy strategy = new RandomStrategy(moves::add, new Random(1));
+    void choosesEveryCommandSometimes() {
+        RandomStrategy strategy = new RandomStrategy(commands, new Random(1));
+        List<Command> chosen = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
-            strategy.getCommands().get(0).execute();
+            chosen.addAll(strategy.getCommands());
         }
 
-        assertEquals(EnumSet.allOf(Direction.class), new HashSet<>(moves));
+        assertEquals(new HashSet<>(commands), new HashSet<>(chosen));
     }
 
     @Test
-    void sameSeedGivesSameDirections() {
-        List<Direction> otherMoves = new ArrayList<>();
-        RandomStrategy strategy = new RandomStrategy(moves::add, new Random(5));
-        RandomStrategy otherStrategy = new RandomStrategy(otherMoves::add, new Random(5));
+    void sameSeedGivesSameCommands() {
+        RandomStrategy strategy = new RandomStrategy(commands, new Random(5));
+        RandomStrategy otherStrategy = new RandomStrategy(commands, new Random(5));
 
         for (int i = 0; i < 10; i++) {
-            strategy.getCommands().get(0).execute();
-            otherStrategy.getCommands().get(0).execute();
+            assertEquals(strategy.getCommands(), otherStrategy.getCommands());
         }
-
-        assertEquals(moves, otherMoves);
     }
 }

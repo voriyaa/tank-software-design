@@ -1,6 +1,5 @@
 package ru.mipt.bit.platformer.graphics;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -14,15 +13,13 @@ public class TankGraphics implements Renderable {
 
     private final Tank tank;
     private final TileMovement tileMovement;
-    private final Texture texture;
     private final TextureRegion graphics;
     private final Rectangle rectangle;
 
-    public TankGraphics(Tank tank, TileMovement tileMovement, String texturePath) {
+    public TankGraphics(Tank tank, TileMovement tileMovement, TextureRegion graphics) {
         this.tank = tank;
         this.tileMovement = tileMovement;
-        texture = new Texture(texturePath);
-        graphics = new TextureRegion(texture);
+        this.graphics = graphics;
         rectangle = createBoundingRectangle(graphics);
     }
 
@@ -31,10 +28,5 @@ public class TankGraphics implements Renderable {
         tileMovement.moveRectangleBetweenTileCenters(rectangle, tank.getCoordinates(),
                 tank.getDestinationCoordinates(), tank.getMovementProgress());
         drawTextureRegionUnscaled(batch, graphics, rectangle, tank.getRotation());
-    }
-
-    @Override
-    public void dispose() {
-        texture.dispose();
     }
 }
