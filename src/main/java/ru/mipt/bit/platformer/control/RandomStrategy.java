@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+/** Driving adapter: simple AI, picks a random command. */
 public class RandomStrategy implements ControlStrategy {
 
     private final List<Command> commands;

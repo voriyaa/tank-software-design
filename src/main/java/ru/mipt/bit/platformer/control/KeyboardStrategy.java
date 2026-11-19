@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.IntPredicate;
 
+/** Infrastructure, driving adapter: turns pressed keys into commands. */
 public class KeyboardStrategy implements ControlStrategy {
 
     private final IntPredicate isKeyPressed;

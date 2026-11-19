@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.control;
 
 import ru.mipt.bit.platformer.model.Shooter;
 
+/** Application: asks an object to shoot. */
 public class ShootCommand implements Command {
 
     private final Shooter shooter;

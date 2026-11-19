@@ -44,6 +44,7 @@ import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createCircleTexture;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createPixelTexture;
 
+/** Infrastructure, driving adapter: libGDX application, wires everything together and runs the game loop. */
 public class GameDesktopLauncher implements ApplicationListener {
 
     private static final float TANK_MOVEMENT_SPEED = 0.4f;

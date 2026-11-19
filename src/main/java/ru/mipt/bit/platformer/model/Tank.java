@@ -1,15 +1,22 @@
 package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
+import ru.mipt.bit.platformer.model.state.HeavyState;
+import ru.mipt.bit.platformer.model.state.LightState;
+import ru.mipt.bit.platformer.model.state.MediumState;
+import ru.mipt.bit.platformer.model.state.TankState;
 
 import static com.badlogic.gdx.math.MathUtils.isEqual;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
+/** Domain entity: tank. */
 public class Tank implements GameObject, Movable, Shooter {
 
     private static final float RELOAD_TIME = 1f;
     private static final float BULLET_SPEED = 0.1f;
-    private static final int BULLET_DAMAGE = 25;
+    private static final int BULLET_DAMAGE = 30;
+    private static final float LIGHT_HEALTH = 0.7f;
+    private static final float HEAVY_HEALTH = 0.15f;
 
     private final float movementSpeed;
     private final int maxHealth;
@@ -20,6 +27,7 @@ public class Tank implements GameObject, Movable, Shooter {
     private Direction direction = Direction.RIGHT;
     private int health;
     private float timeSinceShot = RELOAD_TIME;
+    private TankState state = new LightState();
 
     public Tank(GridPoint2 coordinates, float movementSpeed, int health, GameField field) {
         this.movementSpeed = movementSpeed;
@@ -45,7 +53,7 @@ public class Tank implements GameObject, Movable, Shooter {
 
     @Override
     public void shoot() {
-        if (!isAlive() || timeSinceShot < RELOAD_TIME) {
+        if (!isAlive() || !state.canShoot() || timeSinceShot < RELOAD_TIME) {
             return;
         }
         timeSinceShot = 0f;
@@ -61,11 +69,11 @@ public class Tank implements GameObject, Movable, Shooter {
 
     @Override
     public void live(float deltaTime) {
-        movementProgress = continueProgress(movementProgress, deltaTime, movementSpeed);
+        movementProgress = continueProgress(movementProgress, deltaTime * state.getSpeed(), movementSpeed);
         if (isEqual(movementProgress, 1f)) {
             coordinates.set(destinationCoordinates);
         }
-        timeSinceShot += deltaTime;
+        timeSinceShot += deltaTime * state.getReloadSpeed();
     }
 
     @Override
@@ -78,7 +86,28 @@ public class Tank implements GameObject, Movable, Shooter {
         health -= damage;
         if (!isAlive()) {
             field.remove(this);
+        } else {
+            updateState();
         }
+    }
+
+    private void updateState() {
+        float healthPart = (float) health / maxHealth;
+        if (healthPart > LIGHT_HEALTH) {
+            state = new LightState();
+        } else if (healthPart >= HEAVY_HEALTH) {
+            state = new MediumState();
+        } else {
+            state = new HeavyState();
+        }
+    }
+
+    public TankState getState() {
+        return state;
+    }
+
+    public void setState(TankState state) {
+        this.state = state;
     }
 
     public boolean isAlive() {

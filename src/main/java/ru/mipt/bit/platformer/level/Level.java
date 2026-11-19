@@ -5,6 +5,7 @@ import ru.mipt.bit.platformer.model.Tree;
 
 import java.util.List;
 
+/** Application: level description - size, player, trees and AI tanks. */
 public class Level {
 
     private final int width;

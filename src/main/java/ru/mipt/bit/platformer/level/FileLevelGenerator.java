@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/** Infrastructure, driven adapter for LevelGenerator: reads a level from a text file. */
 public class FileLevelGenerator implements LevelGenerator {
 
     private static final char TREE = 'T';

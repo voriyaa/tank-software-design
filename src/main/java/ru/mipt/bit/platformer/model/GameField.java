@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.GridPoint2;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Domain: logical level, keeps objects and checks collisions. */
 public class GameField {
 
     private final int width;

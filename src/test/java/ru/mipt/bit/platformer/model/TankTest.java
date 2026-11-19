@@ -3,12 +3,17 @@ package ru.mipt.bit.platformer.model;
 import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.mipt.bit.platformer.model.state.HeavyState;
+import ru.mipt.bit.platformer.model.state.LightState;
+import ru.mipt.bit.platformer.model.state.MediumState;
+import ru.mipt.bit.platformer.model.state.TankState;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TankTest {
@@ -236,7 +241,7 @@ class TankTest {
 
         tank.shoot();
 
-        assertEquals(75, enemy.getHealth());
+        assertEquals(70, enemy.getHealth());
         assertTrue(added.isEmpty());
     }
 
@@ -294,5 +299,81 @@ class TankTest {
 
         assertEquals(new GridPoint2(1, 1), tank.getDestinationCoordinates());
         assertTrue(added.isEmpty());
+    }
+
+    @Test
+    void newTankIsLight() {
+        assertInstanceOf(LightState.class, tank.getState());
+    }
+
+    @Test
+    void stateDependsOnHealth() {
+        Tank strong = new Tank(new GridPoint2(5, 5), 0.4f, 100, field);
+
+        strong.hit(29);
+        assertInstanceOf(LightState.class, strong.getState());
+
+        strong.hit(1);
+        assertInstanceOf(MediumState.class, strong.getState());
+
+        strong.hit(55);
+        assertInstanceOf(MediumState.class, strong.getState());
+
+        strong.hit(1);
+        assertInstanceOf(HeavyState.class, strong.getState());
+    }
+
+    @Test
+    void mediumTankMovesTwiceSlower() {
+        Tank strong = new Tank(new GridPoint2(5, 5), 0.4f, 100, field);
+        strong.hit(50);
+
+        strong.move(Direction.RIGHT);
+        strong.live(0.2f);
+
+        assertEquals(0.25f, strong.getMovementProgress(), EPSILON);
+    }
+
+    @Test
+    void heavyTankMovesThreeTimesSlowerAndCannotShoot() {
+        Tank strong = new Tank(new GridPoint2(5, 5), 0.4f, 100, field);
+        strong.hit(90);
+
+        strong.move(Direction.RIGHT);
+        strong.live(0.3f);
+        strong.shoot();
+
+        assertEquals(0.25f, strong.getMovementProgress(), EPSILON);
+        assertTrue(added.isEmpty());
+    }
+
+    @Test
+    void newStateCanBeAdded() {
+        tank.setState(new TankState() {
+            @Override
+            public float getSpeed() {
+                return 2f;
+            }
+
+            @Override
+            public float getReloadSpeed() {
+                return 2f;
+            }
+
+            @Override
+            public boolean canShoot() {
+                return true;
+            }
+        });
+
+        tank.move(Direction.RIGHT);
+        tank.live(0.1f);
+        assertEquals(0.5f, tank.getMovementProgress(), EPSILON);
+
+        tank.shoot();
+        field.remove(added.get(0));
+        tank.live(0.5f);
+        tank.shoot();
+        assertEquals(2, added.size());
     }
 }

@@ -8,6 +8,7 @@ import ru.mipt.bit.platformer.model.Tree;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
+/** Infrastructure: draws a tree. */
 public class TreeGraphics implements Renderable {
 
     private final TextureRegion graphics;

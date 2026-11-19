@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 
+/** Domain: object on the field. */
 public interface GameObject {
     boolean occupies(GridPoint2 point);
 

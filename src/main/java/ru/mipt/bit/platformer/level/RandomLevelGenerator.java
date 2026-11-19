@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+/** Driven adapter for LevelGenerator: generates a random level. */
 public class RandomLevelGenerator implements LevelGenerator {
 
     private final int width;

@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.GridPoint2;
 import static com.badlogic.gdx.math.MathUtils.isEqual;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
+/** Domain entity: bullet. */
 public class Bullet implements GameObject {
 
     private final Direction direction;

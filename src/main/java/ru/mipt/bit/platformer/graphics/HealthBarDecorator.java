@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
 import ru.mipt.bit.platformer.model.Tank;
 
+/** Infrastructure: decorator that draws a health bar over a tank. */
 public class HealthBarDecorator implements Renderable {
 
     private static final float BAR_HEIGHT = 8f;

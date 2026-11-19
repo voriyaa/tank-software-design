@@ -3,6 +3,7 @@ package ru.mipt.bit.platformer.control;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.Movable;
 
+/** Application: asks an object to move. */
 public class MoveCommand implements Command {
 
     private final Movable movable;

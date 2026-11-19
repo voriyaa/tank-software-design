@@ -9,6 +9,7 @@ import ru.mipt.bit.platformer.util.TileMovement;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.drawTextureRegionUnscaled;
 
+/** Infrastructure: draws a bullet. */
 public class BulletGraphics implements Renderable {
 
     private final Bullet bullet;

@@ -21,6 +21,7 @@ import java.util.function.Function;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createSingleLayerMapRenderer;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.getSingleLayer;
 
+/** Infrastructure, driven adapter for FieldListener: draws field objects with libGDX. */
 public class GraphicsLevel implements FieldListener {
 
     private final Batch batch;

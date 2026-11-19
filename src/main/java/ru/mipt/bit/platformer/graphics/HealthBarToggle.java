@@ -1,5 +1,6 @@
 package ru.mipt.bit.platformer.graphics;
 
+/** Infrastructure: keeps whether health bars are shown. */
 public class HealthBarToggle {
 
     private boolean visible;
