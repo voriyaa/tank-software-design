@@ -29,4 +29,9 @@ public class TankGraphics implements Renderable {
                 tank.getDestinationCoordinates(), tank.getMovementProgress());
         drawTextureRegionUnscaled(batch, graphics, rectangle, tank.getRotation());
     }
+
+    @Override
+    public Rectangle getRectangle() {
+        return rectangle;
+    }
 }

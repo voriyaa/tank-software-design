@@ -9,9 +9,10 @@ public class Tank implements GameObject, Movable, Shooter {
 
     private static final float RELOAD_TIME = 1f;
     private static final float BULLET_SPEED = 0.1f;
-    private static final int BULLET_DAMAGE = 1;
+    private static final int BULLET_DAMAGE = 25;
 
     private final float movementSpeed;
+    private final int maxHealth;
     private final GameField field;
     private final GridPoint2 coordinates;
     private final GridPoint2 destinationCoordinates;
@@ -23,6 +24,7 @@ public class Tank implements GameObject, Movable, Shooter {
     public Tank(GridPoint2 coordinates, float movementSpeed, int health, GameField field) {
         this.movementSpeed = movementSpeed;
         this.health = health;
+        maxHealth = health;
         this.field = field;
         this.coordinates = new GridPoint2(coordinates);
         destinationCoordinates = new GridPoint2(coordinates);
@@ -85,6 +87,10 @@ public class Tank implements GameObject, Movable, Shooter {
 
     public int getHealth() {
         return health;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
     }
 
     public GridPoint2 getCoordinates() {

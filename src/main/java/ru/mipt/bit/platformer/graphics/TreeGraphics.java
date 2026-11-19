@@ -23,4 +23,9 @@ public class TreeGraphics implements Renderable {
     public void render(Batch batch) {
         drawTextureRegionUnscaled(batch, graphics, rectangle, 0f);
     }
+
+    @Override
+    public Rectangle getRectangle() {
+        return rectangle;
+    }
 }
